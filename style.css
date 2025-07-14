@@ -45,7 +45,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px;
+    padding: 10px 10px 60px 10px;
 }
 
 /* テキストボックス */
@@ -70,12 +70,14 @@ body {
 
 /* ボタンエリア */
 #buttonArea {
-    min-height: 50px;
+    min-height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     max-width: 800px;
+    position: relative;
+    z-index: 10;
 }
 
 .button-container {
@@ -223,8 +225,13 @@ button:disabled {
 
 /* レスポンシブデザイン：スマートフォン対応 */
 @media screen and (max-width: 768px) {
+    #textArea {
+        padding: 8px 8px 80px 8px;
+    }
+
     #textBox {
         padding: 10px;
+        margin-bottom: 15px;
     }
 
     #storyText {
@@ -250,6 +257,17 @@ button:disabled {
     .button-container {
         flex-wrap: wrap;
         gap: 10px;
+    }
+
+    #buttonArea {
+        min-height: 70px;
+        position: fixed;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background-color: #1a1a1a;
+        padding: 10px;
     }
 
     /* スマートフォンでのナビゲーションボタン */
@@ -287,11 +305,12 @@ button:disabled {
 
 @media screen and (max-width: 480px) {
     #textArea {
-        padding: 8px;
+        padding: 6px 6px 90px 6px;
     }
 
     #textBox {
         padding: 8px;
+        margin-bottom: 20px;
     }
 
     #storyText {
@@ -316,6 +335,17 @@ button:disabled {
 
     .button-container {
         gap: 8px;
+    }
+
+    #buttonArea {
+        min-height: 80px;
+        position: fixed;
+        bottom: 5px;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background-color: #1a1a1a;
+        padding: 15px 10px;
     }
 
     /* 小さいスマートフォンでのナビゲーションボタン */
