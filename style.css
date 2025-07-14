@@ -251,6 +251,38 @@ button:disabled {
         flex-wrap: wrap;
         gap: 10px;
     }
+
+    /* スマートフォンでのナビゲーションボタン */
+    #navigationButtons {
+        padding: 15px 10px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #navigationButtons.active {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .nav-button {
+        min-width: 70px !important;
+        font-size: 14px !important;
+        padding: 10px 16px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #prevButton, #nextButton {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 }
 
 @media screen and (max-width: 480px) {
@@ -284,6 +316,38 @@ button:disabled {
 
     .button-container {
         gap: 8px;
+    }
+
+    /* 小さいスマートフォンでのナビゲーションボタン */
+    #navigationButtons {
+        padding: 12px 8px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #navigationButtons.active {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .nav-button {
+        min-width: 60px !important;
+        font-size: 13px !important;
+        padding: 8px 12px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #prevButton, #nextButton {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 }
 
