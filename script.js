@@ -1,419 +1,274 @@
-// ゲーム状態管理
-class GameState {
-    constructor() {
-        this.currentScene = '';
-        this.history = [];
-        this.flags = {
-            bunseki_cleared: false,
-            okozukai_cleared: false,
-            nazo_cleared: false
-        };
-        this.scenario = null;
-    }
-
-    // フラグをセット
-    setFlag(flagName, value = true) {
-        this.flags[flagName] = value;
-    }
-
-    // フラグを取得
-    getFlag(flagName) {
-        return this.flags[flagName] || false;
-    }
-
-    // 修行がすべてクリアされているかチェック
-    isAllShugyoCleared() {
-        return this.flags.bunseki_cleared && this.flags.okozukai_cleared && this.flags.nazo_cleared;
-    }
-
-    // 履歴に追加
-    addToHistory(sceneId) {
-        this.history.push(sceneId);
-    }
-
-    // 前のシーンを取得
-    getPreviousScene() {
-        if (this.history.length >= 2) {
-            return this.history[this.history.length - 2];
-        }
-        return null;
-    }
-
-    // ゲーム状態をリセット
-    reset() {
-        this.currentScene = '';
-        this.history = [];
-        this.flags = {
-            bunseki_cleared: false,
-            okozukai_cleared: false,
-            nazo_cleared: false
-        };
-    }
-}
-
-// ゲームコントローラー
 class VisualNovelGame {
     constructor() {
-        this.gameState = new GameState();
-        this.elements = {};
+        this.scenario = null;
+        this.currentScene = 'start';
+        this.gameState = {
+            bunsekiCleared: false,
+            okozukaiCleared: false,
+            nazoCleared: false
+        };
+        this.sceneHistory = [];
+        
+        // DOM要素の取得
+        this.elements = {
+            sceneImage: document.getElementById('scene-image'),
+            sceneText: document.getElementById('scene-text'),
+            textBox: document.querySelector('.text-box'),
+            startButton: document.getElementById('start-button'),
+            nextButton: document.getElementById('next-button'),
+            prevButton: document.getElementById('prev-button'),
+            restartButton: document.getElementById('restart-button'),
+            choiceButtons: document.getElementById('choice-buttons'),
+            choiceButtonsInText: document.getElementById('choice-buttons-in-text')
+        };
+        
         this.init();
     }
-
-    // 初期化
+    
     async init() {
-        this.setupElements();
-        await this.loadScenario();
-        this.setupEventListeners();
-        
-        // スタートボタンを初期状態で表示
-        if (this.elements.startButtonContainer) {
-            this.elements.startButtonContainer.style.cssText = 'display: flex !important; position: fixed !important; bottom: 50px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 1000 !important; visibility: visible !important;';
-            this.elements.startButtonContainer.classList.add('active');
-            console.log('初期化時にスタートボタンを表示');
-        }
-        
-        this.showStartScreen();
-    }
-
-    // DOM要素を取得
-    setupElements() {
-        this.elements = {
-            sceneImage: document.getElementById('sceneImage'),
-            storyText: document.getElementById('storyText'),
-            textBox: document.getElementById('textBox'),
-            navigationButtons: document.getElementById('navigationButtons'),
-            startButtonContainer: document.getElementById('startButtonContainer'),
-            choiceButtons: document.getElementById('choiceButtons'),
-            endingButtonContainer: document.getElementById('endingButtonContainer'),
-            prevButton: document.getElementById('prevButton'),
-            nextButton: document.getElementById('nextButton'),
-            startButton: document.getElementById('startButton'),
-            restartButton: document.getElementById('restartButton')
-        };
-    }
-
-    // シナリオデータを読み込み
-    async loadScenario() {
         try {
+            // シナリオデータの読み込み
             const response = await fetch('scenario.json');
-            this.gameState.scenario = await response.json();
+            this.scenario = await response.json();
+            
+            // イベントリスナーの設定
+            this.setupEventListeners();
+            
+            // 初期シーンの表示
+            this.displayScene(this.scenario.startScene);
+            
         } catch (error) {
-            console.error('シナリオファイルの読み込みに失敗しました:', error);
-            alert('ゲームデータの読み込みに失敗しました。');
+            console.error('シナリオデータの読み込みに失敗しました:', error);
+            this.elements.sceneText.textContent = 'ゲームデータの読み込みに失敗しました。';
         }
     }
-
-    // イベントリスナーを設定
+    
     setupEventListeners() {
-        this.elements.startButton.addEventListener('click', () => this.startGame());
-        this.elements.nextButton.addEventListener('click', () => this.nextScene());
-        this.elements.prevButton.addEventListener('click', () => this.prevScene());
-        this.elements.restartButton.addEventListener('click', () => this.restart());
-    }
-
-    // スタート画面を表示
-    showStartScreen() {
-        this.gameState.currentScene = 'start';
-        document.getElementById('gameContainer').classList.add('start-mode');
-        this.displayScene('start');
-        this.showButtons('start');
+        // スタートボタン
+        this.elements.startButton.addEventListener('click', () => {
+            this.startGame();
+        });
         
-        // デバッグ用：スタートボタンを強制表示
-        setTimeout(() => {
-            const startBtn = document.getElementById('startButtonContainer');
-            if (startBtn) {
-                startBtn.style.cssText = 'display: flex !important; position: fixed !important; bottom: 50px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 1000 !important; visibility: visible !important;';
-                startBtn.classList.remove('hidden');
-                startBtn.classList.add('active');
-                console.log('スタートボタンを強制表示しました', startBtn);
-            }
-        }, 100);
+        // 次へボタン
+        this.elements.nextButton.addEventListener('click', () => {
+            this.nextScene();
+        });
+        
+        // 戻るボタン
+        this.elements.prevButton.addEventListener('click', () => {
+            this.prevScene();
+        });
+        
+        // 最初からボタン
+        this.elements.restartButton.addEventListener('click', () => {
+            this.restartGame();
+        });
     }
-
-    // ゲーム開始
-    startGame() {
-        this.gameState.reset();
-        document.getElementById('gameContainer').classList.remove('start-mode');
-        this.moveToScene('c1_1');
-    }
-
-    // シーンに移動
-    moveToScene(sceneId) {
-        // 特殊な処理が必要なシーンIDをチェック
-        if (sceneId === 'CHECK_SHUGYO_CLEAR') {
-            this.handleShugyoCheck();
-            return;
-        }
-
-        const scene = this.gameState.scenario.scenes[sceneId];
-        if (!scene) {
+    
+    displayScene(sceneId) {
+        if (!this.scenario || !this.scenario.scenes[sceneId]) {
             console.error('シーンが見つかりません:', sceneId);
             return;
         }
-
-        // 現在のシーンを履歴に追加
-        if (this.gameState.currentScene) {
-            this.gameState.addToHistory(this.gameState.currentScene);
-        }
-
-        this.gameState.currentScene = sceneId;
-        this.displayScene(sceneId);
-
-        // アクションが設定されている場合は実行
+        
+        const scene = this.scenario.scenes[sceneId];
+        this.currentScene = sceneId;
+        
+        // 画像の更新
+        this.elements.sceneImage.src = `images/${scene.image}`;
+        this.elements.sceneImage.alt = scene.text.substring(0, 50);
+        
+        // テキストの更新（フェードインアニメーション付き）
+        this.elements.sceneText.classList.remove('fade-in');
+        setTimeout(() => {
+            this.elements.sceneText.textContent = scene.text;
+            this.elements.sceneText.classList.add('fade-in');
+        }, 100);
+        
+        // 特殊アクションの処理
         if (scene.action) {
-            this.executeAction(scene.action);
+            this.handleSceneAction(scene.action);
+        }
+        
+        // ボタンの表示制御
+        this.updateButtonVisibility(scene);
+    }
+    
+    handleSceneAction(action) {
+        switch (action) {
+            case 'set_bunseki_cleared':
+                this.gameState.bunsekiCleared = true;
+                break;
+            case 'set_okozukai_cleared':
+                this.gameState.okozukaiCleared = true;
+                break;
+            case 'set_nazo_cleared':
+                this.gameState.nazoCleared = true;
+                break;
         }
     }
-
-    // シーンを表示
-    displayScene(sceneId) {
-        const scene = this.gameState.scenario.scenes[sceneId];
-        if (!scene) return;
-
-        // 画像を更新
-        this.updateImage(scene.image);
-
-        // テキストを更新
-        this.updateText(scene.text);
-
-        // ボタンを表示
-        this.showButtons(scene.type, scene);
-    }
-
-    // 画像を更新
-    updateImage(imagePath) {
-        this.elements.sceneImage.src = 'images/' + imagePath;
-        this.elements.sceneImage.alt = 'シーン画像';
-    }
-
-    // テキストを更新
-    updateText(text) {
-        this.elements.storyText.textContent = text;
-    }
-
-    // ボタンを表示
-    showButtons(type, scene = null) {
-        switch (type) {
+    
+    updateButtonVisibility(scene) {
+        // 全ボタンを非表示にする
+        this.hideAllButtons();
+        
+        switch (scene.type) {
             case 'start':
-                // すべてのボタンコンテナを非表示（スタートボタン以外）
-                this.elements.navigationButtons.classList.remove('active');
-                this.elements.navigationButtons.style.cssText = 'display: none !important;';
-                this.elements.choiceButtons.classList.remove('active');
-                this.elements.choiceButtons.style.cssText = 'display: none !important;';
-                this.elements.endingButtonContainer.classList.remove('active');
-                this.elements.endingButtonContainer.style.cssText = 'display: none !important;';
-                
-                // スタート画面ではテキストボックスを非表示
-                this.elements.textBox.style.visibility = 'hidden';
-                // スタートボタンを確実に表示
-                this.elements.startButtonContainer.classList.remove('hidden');
-                this.elements.startButtonContainer.classList.add('active');
-                this.elements.startButtonContainer.style.cssText = 'display: flex !important; position: fixed !important; bottom: 50px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 1000 !important; visibility: visible !important;';
-                console.log('スタートボタンを表示しました');
+                // スタートシーンではテキストボックスを非表示
+                this.elements.textBox.style.display = 'none';
+                this.elements.startButton.style.display = 'inline-block';
                 break;
-
+                
             case 'dialogue':
-                // 他のボタンコンテナを非表示
-                this.elements.startButtonContainer.classList.remove('active');
-                this.elements.startButtonContainer.classList.add('hidden');
-                this.elements.startButtonContainer.style.cssText = 'display: none !important;';
-                this.elements.choiceButtons.classList.remove('active');
-                this.elements.choiceButtons.style.cssText = 'display: none !important;';
-                this.elements.endingButtonContainer.classList.remove('active');
-                this.elements.endingButtonContainer.style.cssText = 'display: none !important;';
+                // ダイアログシーンではテキストボックスを表示
+                this.elements.textBox.style.display = 'flex';
                 
-                // 通常のシーンではテキストボックスを表示
-                this.elements.textBox.style.visibility = 'visible';
-                
-                // ナビゲーションボタンを確実に表示
-                this.elements.navigationButtons.classList.add('active');
-                this.elements.navigationButtons.style.cssText = 'display: flex !important; justify-content: space-between !important; width: 100% !important; max-width: 800px !important; margin: 0 auto !important; padding: 10px 0 !important;';
-                
-                // 個別ボタンも確実に表示
-                if (this.elements.prevButton) {
-                    this.elements.prevButton.style.display = 'block';
-                }
-                if (this.elements.nextButton) {
-                    this.elements.nextButton.style.display = 'block';
+                // CHECK_SHUGYO_CLEARの特殊処理
+                if (scene.next === 'CHECK_SHUGYO_CLEAR') {
+                    if (this.gameState.bunsekiCleared && this.gameState.okozukaiCleared && this.gameState.nazoCleared) {
+                        // 3つすべての修行をクリアしていれば次の章へ
+                        this.currentScene = 'c4_1';
+                        setTimeout(() => this.displayScene('c4_1'), 500);
+                        return;
+                    } else {
+                        // いずれかが未クリアなら修行選択に戻る
+                        setTimeout(() => this.displayScene('c3_choice'), 500);
+                        return;
+                    }
                 }
                 
-                this.updateNavigationButtons(scene);
-                console.log('ナビゲーションボタンを表示しました');
+                this.elements.nextButton.style.display = 'inline-block';
+                if (scene.prev) {
+                    this.elements.prevButton.style.display = 'inline-block';
+                }
                 break;
-
+                
             case 'choice':
-                // 他のボタンコンテナを非表示
-                this.elements.startButtonContainer.classList.remove('active');
-                this.elements.startButtonContainer.classList.add('hidden');
-                this.elements.startButtonContainer.style.cssText = 'display: none !important;';
-                this.elements.navigationButtons.classList.remove('active');
-                this.elements.navigationButtons.style.cssText = 'display: none !important;';
-                this.elements.endingButtonContainer.classList.remove('active');
-                this.elements.endingButtonContainer.style.cssText = 'display: none !important;';
-                
                 // 選択肢シーンではテキストボックスを表示
-                this.elements.textBox.style.visibility = 'visible';
-                this.setupChoiceButtons(scene.choices);
-                this.elements.choiceButtons.classList.add('active');
-                this.elements.choiceButtons.style.cssText = 'display: flex !important;';
+                this.elements.textBox.style.display = 'flex';
                 
-                // 修行選択画面で全修行完了済みの場合のみ、ナビゲーションボタンを表示
-                if (this.gameState.currentScene === 'c3_choice' && this.gameState.isAllShugyoCleared()) {
-                    this.elements.navigationButtons.classList.add('active');
-                    this.elements.navigationButtons.style.cssText = 'display: flex !important; justify-content: space-between !important; width: 100% !important; max-width: 800px !important; margin: 0 auto !important; padding: 10px 0 !important;';
-                    this.updateNavigationButtons(scene);
+                // c3_choiceで全修行完了している場合は次へボタンを表示
+                if (this.currentScene === 'c3_choice' && 
+                    this.gameState.bunsekiCleared && 
+                    this.gameState.okozukaiCleared && 
+                    this.gameState.nazoCleared) {
+                    // テキストを修行完了メッセージに変更
+                    this.elements.sceneText.textContent = "「素晴らしい！3つの修行をすべてやり遂げたな。分析力、努力、そして体力……。これでキミは本当に強くなった。さあ、次の段階に進もう！」\nれんとんが満足そうに笑っている。";
+                    this.elements.nextButton.style.display = 'inline-block';
+                    if (scene.prev) {
+                        this.elements.prevButton.style.display = 'inline-block';
+                    }
+                } else {
+                    this.createChoiceButtons(scene.choices);
+                    if (scene.prev) {
+                        this.elements.prevButton.style.display = 'inline-block';
+                    }
                 }
                 break;
-
-            case 'ending':
-                // 他のボタンコンテナを非表示
-                this.elements.startButtonContainer.classList.remove('active');
-                this.elements.startButtonContainer.classList.add('hidden');
-                this.elements.startButtonContainer.style.cssText = 'display: none !important;';
-                this.elements.navigationButtons.classList.remove('active');
-                this.elements.navigationButtons.style.cssText = 'display: none !important;';
-                this.elements.choiceButtons.classList.remove('active');
-                this.elements.choiceButtons.style.cssText = 'display: none !important;';
                 
+            case 'ending':
                 // エンディングシーンではテキストボックスを表示
-                this.elements.textBox.style.visibility = 'visible';
-                this.elements.endingButtonContainer.classList.add('active');
-                this.elements.endingButtonContainer.style.cssText = 'display: flex !important;';
+                this.elements.textBox.style.display = 'flex';
+                this.elements.restartButton.style.display = 'inline-block';
                 break;
         }
     }
-
-    // すべてのボタンコンテナを非表示
-    hideAllButtons() {
-        const containers = [
-            this.elements.navigationButtons,
-            this.elements.startButtonContainer,
-            this.elements.choiceButtons,
-            this.elements.endingButtonContainer
-        ];
-
-        containers.forEach(container => {
-            container.classList.remove('active');
-        });
-    }
-
-    // ナビゲーションボタンの状態を更新
-    updateNavigationButtons(scene) {
-        // 戻るボタンの状態
-        this.elements.prevButton.disabled = !scene.prev;
-
-        // 次へボタンの状態
-        this.elements.nextButton.disabled = !scene.next;
-    }
-
-    // 選択肢ボタンを設定
-    setupChoiceButtons(choices) {
+    
+    createChoiceButtons(choices) {
         // 既存の選択肢ボタンをクリア
         this.elements.choiceButtons.innerHTML = '';
-
-        choices.forEach((choice) => {
-            // 修行選択の場合、完了済みの修行は表示しない
-            if (this.shouldSkipChoice(choice)) {
-                return;
-            }
-
+        this.elements.choiceButtonsInText.innerHTML = '';
+        
+        // テキストを非表示にして選択肢をテキストボックス内に表示
+        this.elements.sceneText.style.display = 'none';
+        
+        // c3_choiceシーンの場合、クリア済みの修行は表示しない
+        let filteredChoices = choices;
+        if (this.currentScene === 'c3_choice') {
+            filteredChoices = choices.filter(choice => {
+                if (choice.next === 's_bunseki_1' && this.gameState.bunsekiCleared) return false;
+                if (choice.next === 's_okozukai_1' && this.gameState.okozukaiCleared) return false;
+                if (choice.next === 's_nazo_1' && this.gameState.nazoCleared) return false;
+                return true;
+            });
+        }
+        
+        filteredChoices.forEach((choice) => {
             const button = document.createElement('button');
             button.className = 'choice-button';
             button.textContent = choice.text;
             button.addEventListener('click', () => {
                 this.selectChoice(choice.next);
             });
-            this.elements.choiceButtons.appendChild(button);
+            this.elements.choiceButtonsInText.appendChild(button);
         });
+        
+        this.elements.choiceButtonsInText.style.display = 'flex';
     }
-
-    // 選択肢をスキップするかどうかを判定
-    shouldSkipChoice(choice) {
-        // 分析の修行が完了している場合、分析の選択肢をスキップ
-        if (choice.next === 's_bunseki_1' && this.gameState.getFlag('bunseki_cleared')) {
-            return true;
-        }
-
-        // お小遣いの修行が完了している場合、お小遣いの選択肢をスキップ
-        if (choice.next === 's_okozukai_1' && this.gameState.getFlag('okozukai_cleared')) {
-            return true;
-        }
-
-        // 謎の修行が完了している場合、謎の選択肢をスキップ
-        if (choice.next === 's_nazo_1' && this.gameState.getFlag('nazo_cleared')) {
-            return true;
-        }
-
-        return false;
+    
+    hideAllButtons() {
+        this.elements.startButton.style.display = 'none';
+        this.elements.nextButton.style.display = 'none';
+        this.elements.prevButton.style.display = 'none';
+        this.elements.restartButton.style.display = 'none';
+        this.elements.choiceButtons.style.display = 'none';
+        this.elements.choiceButtonsInText.style.display = 'none';
+        
+        // テキストを再表示
+        this.elements.sceneText.style.display = 'block';
     }
-
-    // 選択肢を選択
-    selectChoice(nextSceneId) {
-        this.moveToScene(nextSceneId);
+    
+    startGame() {
+        this.sceneHistory = [];
+        this.addToHistory(this.currentScene);
+        this.displayScene('c1_1');
     }
-
-    // 次のシーンに進む
+    
     nextScene() {
-        const currentScene = this.gameState.scenario.scenes[this.gameState.currentScene];
-        if (currentScene && currentScene.next) {
-            this.moveToScene(currentScene.next);
+        const scene = this.scenario.scenes[this.currentScene];
+        if (scene && scene.next) {
+            this.addToHistory(this.currentScene);
+            this.displayScene(scene.next);
         }
     }
-
-    // 前のシーンに戻る
+    
     prevScene() {
-        const currentScene = this.gameState.scenario.scenes[this.gameState.currentScene];
-        if (currentScene && currentScene.prev) {
-            this.moveToScene(currentScene.prev);
+        const scene = this.scenario.scenes[this.currentScene];
+        if (scene && scene.prev) {
+            this.displayScene(scene.prev);
+        } else if (this.sceneHistory.length > 0) {
+            // 履歴から前のシーンを取得
+            const prevScene = this.sceneHistory.pop();
+            this.displayScene(prevScene);
         }
     }
-
-    // アクションを実行
-    executeAction(action) {
-        switch (action) {
-            case 'set_bunseki_cleared':
-                this.gameState.setFlag('bunseki_cleared', true);
-                break;
-
-            case 'set_okozukai_cleared':
-                this.gameState.setFlag('okozukai_cleared', true);
-                break;
-
-            case 'set_nazo_cleared':
-                this.gameState.setFlag('nazo_cleared', true);
-                break;
+    
+    selectChoice(nextSceneId) {
+        this.addToHistory(this.currentScene);
+        this.displayScene(nextSceneId);
+    }
+    
+    addToHistory(sceneId) {
+        this.sceneHistory.push(sceneId);
+        // 履歴が長くなりすぎないよう制限
+        if (this.sceneHistory.length > 50) {
+            this.sceneHistory.shift();
         }
     }
-
-    // 修行チェック処理
-    handleShugyoCheck() {
-        if (this.gameState.isAllShugyoCleared()) {
-            // すべての修行がクリアされている場合、次の章へ
-            this.moveToScene('c4_1');
-        } else {
-            // まだクリアされていない修行がある場合、選択画面に戻る
-            this.moveToScene('c3_choice');
-        }
-    }
-
-    // ゲームを最初から開始
-    restart() {
-        this.gameState.reset();
-        document.getElementById('gameContainer').classList.add('start-mode');
-        
-        // スタートボタンを確実に表示
-        if (this.elements.startButtonContainer) {
-            this.elements.startButtonContainer.style.cssText = 'display: flex !important; position: fixed !important; bottom: 50px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 1000 !important; visibility: visible !important;';
-            this.elements.startButtonContainer.classList.remove('hidden');
-            this.elements.startButtonContainer.classList.add('active');
-            console.log('リスタート時にスタートボタンを表示');
-        }
-        
-        this.showStartScreen();
+    
+    restartGame() {
+        // ゲーム状態をリセット
+        this.gameState = {
+            bunsekiCleared: false,
+            okozukaiCleared: false,
+            nazoCleared: false
+        };
+        this.sceneHistory = [];
+        this.displayScene(this.scenario.startScene);
     }
 }
 
-// ページ読み込み完了後にゲームを初期化
+// ページ読み込み完了後にゲームを開始
 document.addEventListener('DOMContentLoaded', () => {
     new VisualNovelGame();
 });

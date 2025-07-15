@@ -7,44 +7,37 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="gameContainer">
-        <!-- 上部：画像表示エリア（約2/3） -->
-        <div id="imageArea">
-            <img id="sceneImage" src="images/1.png" alt="シーン画像">
+    <div class="game-container">
+        <!-- 上部エリア（約2/3）：画像表示 -->
+        <div class="image-area">
+            <img id="scene-image" src="images/1.png" alt="ゲーム画像">
         </div>
-
-        <!-- 下部：テキストボックスエリア（約1/3） -->
-        <div id="textArea">
-            <div id="textBox">
-                <p id="storyText">タイトル『キミならどうする？ 勝利への選択肢』</p>
+        
+        <!-- 下部エリア（約1/3）：テキストとボタン -->
+        <div class="text-area">
+            <div class="text-box">
+                <p id="scene-text"></p>
+                <!-- 選択肢ボタン（テキストボックス内に表示） -->
+                <div id="choice-buttons-in-text" class="choice-container" style="display: none;"></div>
             </div>
             
-            <!-- ボタンエリア -->
-            <div id="buttonArea">
-                <!-- 通常のナビゲーションボタン -->
-                <div id="navigationButtons" class="button-container">
-                    <button id="prevButton" class="nav-button">もどる</button>
-                    <button id="nextButton" class="nav-button">つぎへ</button>
-                </div>
-
+            <div class="button-area">
                 <!-- スタートボタン -->
-                <div id="startButtonContainer" class="button-container">
-                    <button id="startButton" class="game-button">スタート</button>
-                </div>
-
-                <!-- 選択肢ボタン -->
-                <div id="choiceButtons" class="button-container">
-                    <!-- 選択肢ボタンは動的に生成 -->
-                </div>
-
+                <button id="start-button" class="game-button">スタート</button>
+                
+                <!-- 通常進行ボタン -->
+                <button id="prev-button" class="game-button" style="display: none;">もどる</button>
+                <button id="next-button" class="game-button" style="display: none;">つぎへ</button>
+                
+                <!-- 選択肢ボタン（動的に生成） -->
+                <div id="choice-buttons" class="choice-container" style="display: none;"></div>
+                
                 <!-- エンディングボタン -->
-                <div id="endingButtonContainer" class="button-container">
-                    <button id="restartButton" class="game-button">最初から</button>
-                </div>
+                <button id="restart-button" class="game-button" style="display: none;">最初から</button>
             </div>
         </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>
