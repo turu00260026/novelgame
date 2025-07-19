@@ -1,357 +1,417 @@
-/* リセットCSS */
+/* 基本設定 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* 基本スタイル */
 body {
-    font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'メイリオ', sans-serif;
-    background-color: #1a1a2e;
-    color: #ffffff;
+    font-family: 'Hiragino Sans', 'Yu Gothic', Arial, sans-serif;
+    background-color: #f0f0f0;
     overflow: hidden;
-    height: 100vh;
 }
 
-/* ゲーム全体のコンテナ */
-.game-container {
+/* ゲームコンテナ：画面全体を使用 */
+#gameContainer {
     width: 100vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: #333;
 }
 
-/* 上部エリア（画像表示エリア） */
-.image-area {
-    height: 66.67vh; /* 2/3の高さ */
-    width: 100%;
+/* 上部：画像表示エリア（約2/3） */
+#imageArea {
+    flex: 2;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+    background-color: #222;
     overflow: hidden;
 }
 
-#scene-image {
+#sceneImage {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.3s ease-in-out;
 }
 
-/* 下部エリア（テキストとボタンエリア） */
-.text-area {
-    height: 33.33vh; /* 1/3の高さ */
-    width: 100%;
-    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-    border-top: 3px solid #e94560;
+/* 下部：テキストボックスエリア（約1/3） */
+#textArea {
+    flex: 1;
+    background-color: #1a1a1a;
+    border-top: 2px solid #555;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0;
+    padding: 10px 10px 60px 10px;
 }
 
 /* テキストボックス */
-.text-box {
+#textBox {
     flex: 1;
-    padding: 20px;
-    background: rgba(25, 25, 46, 0.9);
-    border-bottom: 2px solid #e94560;
+    background-color: #2a2a2a;
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     width: 100%;
-    max-width: min(90vw, 90vh * 1.5);
-    margin: 0 auto;
+    max-width: 800px;
 }
 
-#scene-text {
+#storyText {
+    color: #fff;
     font-size: 16px;
     line-height: 1.6;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    white-space: pre-line;
-    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 /* ボタンエリア */
-.button-area {
-    padding: 15px 20px;
+#buttonArea {
+    min-height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-    min-height: 80px;
     width: 100%;
-    max-width: min(90vw, 90vh * 1.5);
-    margin: 0 auto;
+    max-width: 800px;
+    position: relative;
+    z-index: 10;
 }
 
-/* ゲームボタンの基本スタイル */
-.game-button {
-    background: linear-gradient(135deg, #e94560 0%, #c73650 100%);
-    color: #ffffff;
+.button-container {
+    display: none;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ナビゲーションボタンコンテナのみ特別に配置 */
+#navigationButtons.button-container {
+    justify-content: space-between;
+}
+
+.button-container.active {
+    display: flex;
+}
+
+/* ボタン共通スタイル */
+button {
+    background: linear-gradient(45deg, #4a90e2, #357abd);
+    color: white;
     border: none;
+    border-radius: 6px;
     padding: 12px 24px;
-    border-radius: 25px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    min-width: 120px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background: linear-gradient(45deg, #357abd, #2c6ba0);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ナビゲーションボタン */
+.nav-button {
+    min-width: 80px;
+}
+
+/* ナビゲーションボタンの配置 */
+#navigationButtons {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 戻るボタンを左に配置 */
+#prevButton {
+    margin-right: auto;
+}
+
+/* 次へボタンを右に配置 */
+#nextButton {
+    margin-left: auto;
+}
+
+/* ゲームボタン（スタート、最初から） */
+.game-button {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    font-size: 18px;
+    padding: 15px 30px;
 }
 
 .game-button:hover {
-    background: linear-gradient(135deg, #ff5577 0%, #e94560 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+    background: linear-gradient(45deg, #c0392b, #a93226);
 }
 
-.game-button:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(233, 69, 96, 0.3);
+/* スタートボタンの特別な配置 */
+#startButtonContainer {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    display: none;
 }
 
-/* 選択肢ボタンのコンテナ */
-.choice-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 600px;
+/* スタートボタンが確実に表示されるように */
+#startButtonContainer.active {
+    display: flex !important;
 }
 
-/* テキストボックス内の選択肢コンテナ */
-#choice-buttons-in-text {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    margin-top: 5px;
+/* ゲーム開始後はスタートボタンを完全に非表示 */
+#startButtonContainer.hidden {
+    display: none !important;
 }
 
-/* テキストボックス内の選択肢ボタン */
-#choice-buttons-in-text .choice-button {
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    line-height: 1.2;
-    min-height: auto;
-    box-shadow: 0 2px 8px rgba(50, 130, 184, 0.3);
+/* スタート画面でのスタートボタン表示 */
+#gameContainer.start-mode #startButtonContainer.active {
+    display: flex !important;
 }
 
-#choice-buttons-in-text .choice-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(50, 130, 184, 0.4);
-}
-
-#choice-buttons-in-text .choice-button:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 5px rgba(50, 130, 184, 0.3);
-}
-
-.choice-button {
-    background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
-    color: #ffffff;
+/* スタート画面でのテキストエリア非表示対応 */
+#gameContainer.start-mode #textArea {
+    background: transparent;
     border: none;
+}
+
+#gameContainer.start-mode #textBox {
+    display: none !important;
+}
+
+#gameContainer.start-mode #buttonArea {
+    background: transparent;
+}
+
+/* 選択肢ボタン */
+.choice-button {
+    background: linear-gradient(45deg, #27ae60, #229954);
+    margin: 5px;
     padding: 15px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 12px rgba(50, 130, 184, 0.3);
     text-align: left;
-    line-height: 1.4;
-    word-wrap: break-word;
+    white-space: pre-wrap;
+    flex: 1;
+    min-width: 200px;
 }
 
 .choice-button:hover {
-    background: linear-gradient(135deg, #1e6091 0%, #4da3d9 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(50, 130, 184, 0.4);
+    background: linear-gradient(45deg, #229954, #1e8449);
 }
 
-.choice-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(50, 130, 184, 0.3);
-}
-
-/* タブレット・スマートフォン対応 */
+/* レスポンシブデザイン：スマートフォン対応 */
 @media screen and (max-width: 768px) {
-    .text-box {
-        padding: 15px;
-        max-width: min(95vw, 95vh * 1.5);
+    #textArea {
+        padding: 8px 8px 80px 8px;
     }
-    
-    #scene-text {
+
+    #textBox {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    #storyText {
         font-size: 14px;
-        line-height: 1.5;
     }
-    
-    .button-area {
-        padding: 10px 15px;
-        gap: 10px;
-        min-height: 70px;
-        max-width: min(95vw, 95vh * 1.5);
+
+    button {
+        font-size: 14px;
+        padding: 10px 16px;
     }
-    
+
     .game-button {
-        padding: 10px 20px;
-        font-size: 14px;
-        min-width: 100px;
+        font-size: 16px;
+        padding: 12px 24px;
     }
-    
+
     .choice-button {
         padding: 12px 16px;
-        font-size: 13px;
+        font-size: 14px;
+        min-width: 150px;
     }
-    
-    /* タブレット・スマートフォン用テキストボックス内選択肢ボタン */
-    #choice-buttons-in-text .choice-button {
-        padding: 6px 10px;
-        font-size: 11px;
-        line-height: 1.1;
+
+    .button-container {
+        flex-wrap: wrap;
+        gap: 10px;
     }
-    
-    #choice-buttons-in-text {
-        gap: 6px;
-        margin-top: 3px;
+
+    #buttonArea {
+        min-height: 70px;
+        position: fixed;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background-color: #1a1a1a;
+        padding: 10px;
+    }
+
+    /* スマートフォンでのナビゲーションボタン */
+    #navigationButtons {
+        padding: 15px 10px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #navigationButtons.active {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .nav-button {
+        min-width: 70px !important;
+        font-size: 14px !important;
+        padding: 10px 16px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #prevButton, #nextButton {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 }
 
 @media screen and (max-width: 480px) {
-    .text-box {
-        padding: 12px;
-        max-width: min(98vw, 98vh * 1.5);
+    #textArea {
+        padding: 6px 6px 90px 6px;
     }
-    
-    #scene-text {
+
+    #textBox {
+        padding: 8px;
+        margin-bottom: 20px;
+    }
+
+    #storyText {
         font-size: 13px;
+    }
+
+    button {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .game-button {
+        font-size: 15px;
+        padding: 10px 20px;
+    }
+
+    .choice-button {
+        padding: 10px 12px;
+        font-size: 13px;
+        min-width: 120px;
+    }
+
+    .button-container {
+        gap: 8px;
+    }
+
+    #buttonArea {
+        min-height: 80px;
+        position: fixed;
+        bottom: 5px;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background-color: #1a1a1a;
+        padding: 15px 10px;
+    }
+
+    /* 小さいスマートフォンでのナビゲーションボタン */
+    #navigationButtons {
+        padding: 12px 8px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #navigationButtons.active {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .nav-button {
+        min-width: 60px !important;
+        font-size: 13px !important;
+        padding: 8px 12px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    #prevButton, #nextButton {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+/* 横向きスマートフォン対応 */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+    #imageArea {
+        flex: 3;
+    }
+
+    #textArea {
+        flex: 2;
+    }
+
+    #textBox {
+        padding: 8px;
+    }
+
+    #storyText {
+        font-size: 12px;
         line-height: 1.4;
     }
-    
-    .button-area {
-        padding: 8px 12px;
-        gap: 8px;
-        min-height: 60px;
-        max-width: min(98vw, 98vh * 1.5);
+
+    button {
+        font-size: 12px;
+        padding: 6px 10px;
     }
-    
+
     .game-button {
+        font-size: 14px;
         padding: 8px 16px;
-        font-size: 13px;
-        min-width: 90px;
     }
-    
+
     .choice-button {
-        padding: 10px 14px;
+        padding: 8px 10px;
         font-size: 12px;
     }
-    
-    /* スマートフォン用テキストボックス内選択肢ボタン */
-    #choice-buttons-in-text .choice-button {
-        padding: 5px 8px;
-        font-size: 10px;
-        line-height: 1.1;
-    }
-    
-    #choice-buttons-in-text {
-        gap: 5px;
-        margin-top: 2px;
-    }
-    
-    .choice-container {
-        gap: 8px;
-    }
-}
-
-/* 画面が横向きの場合の調整 */
-@media screen and (orientation: landscape) and (max-height: 600px) {
-    .image-area {
-        height: 60vh;
-    }
-    
-    .text-area {
-        height: 40vh;
-    }
-    
-    .text-box {
-        padding: 10px 15px;
-        max-width: min(85vw, 85vh * 1.5);
-    }
-    
-    #scene-text {
-        font-size: 13px;
-        line-height: 1.3;
-    }
-    
-    .button-area {
-        padding: 8px 15px;
-        min-height: 50px;
-        max-width: min(85vw, 85vh * 1.5);
-    }
-    
-    .game-button {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-    
-    .choice-button {
-        padding: 8px 12px;
-        font-size: 11px;
-    }
-    
-    /* 横向きモード用テキストボックス内選択肢ボタン */
-    #choice-buttons-in-text .choice-button {
-        padding: 4px 8px;
-        font-size: 10px;
-        line-height: 1.0;
-    }
-    
-    #choice-buttons-in-text {
-        gap: 4px;
-        margin-top: 2px;
-    }
-}
-
-/* アニメーション */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* スクロールバーのスタイリング */
-.text-box::-webkit-scrollbar {
-    width: 6px;
-}
-
-.text-box::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.text-box::-webkit-scrollbar-thumb {
-    background: rgba(233, 69, 96, 0.6);
-    border-radius: 3px;
-}
-
-.text-box::-webkit-scrollbar-thumb:hover {
-    background: rgba(233, 69, 96, 0.8);
 }
